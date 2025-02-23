@@ -2,7 +2,8 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import { data } from '../util/util';
+
+
 
 export class AwsBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -18,9 +19,7 @@ export class AwsBackendStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       code: lambda.Code.fromAsset('lambda'),
       handler: 'getProductsById.handler',
-      environment: {
-        MOCK_DATA: JSON.stringify(data),
-      },
+
     });
 
     const productCatalogApi = new apigateway.RestApi(this, 'ProductCatalogApi', {
@@ -39,7 +38,7 @@ export class AwsBackendStack extends cdk.Stack {
       new apigateway.LambdaIntegration(fetchAllProductsLambda)
     );
 
-    const productByIdResource = productsResource.addResource('{productId}');
+    const productByIdResource = productsResource.addResource('{id}');
     productByIdResource.addMethod(
       'GET',
       new apigateway.LambdaIntegration(fetchProductByIdLambda)

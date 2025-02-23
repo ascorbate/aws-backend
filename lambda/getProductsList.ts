@@ -1,4 +1,4 @@
-import { data } from "../util/util";
+import { data } from "./util";
 
   
 exports.handler = async () => {

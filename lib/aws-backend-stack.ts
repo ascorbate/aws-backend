@@ -14,6 +14,14 @@ export class AwsBackendStack extends cdk.Stack {
       handler: 'getProductsList.handler',
     });
 
+    const fetchProductByIdLambda = new lambda.Function(this, 'FetchProductByIdFunction', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'getProductsById.handler',
+      environment: {
+        MOCK_DATA: JSON.stringify(data),
+      },
+    });
 
     const productCatalogApi = new apigateway.RestApi(this, 'ProductCatalogApi', {
       restApiName: 'Product Catalog API',
@@ -21,7 +29,7 @@ export class AwsBackendStack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: ['Content-Type', 'Authorization'],
+        allowHeaders: ['*'],
       },
     });
 
@@ -31,6 +39,10 @@ export class AwsBackendStack extends cdk.Stack {
       new apigateway.LambdaIntegration(fetchAllProductsLambda)
     );
 
-   
+    const productByIdResource = productsResource.addResource('{productId}');
+    productByIdResource.addMethod(
+      'GET',
+      new apigateway.LambdaIntegration(fetchProductByIdLambda)
+    );
   }
 }

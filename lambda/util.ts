@@ -4,7 +4,7 @@ export interface Product {
   description: string;
   price: number;
 }
-
+/* 
 export const data: Product[] = [
   {
     id: "1",
@@ -25,3 +25,4 @@ export const data: Product[] = [
     price: 15,
   },
 ];
+ */

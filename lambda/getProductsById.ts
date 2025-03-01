@@ -3,14 +3,33 @@ import {
   APIGatewayProxyHandler,
   APIGatewayProxyResult,
 } from 'aws-lambda';
-import { data } from './util';
+import * as AWS from "aws-sdk";
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const PRODUCTS_TABLE: string = process.env.PRODUCTS_TABLE!;
+const STOCKS_TABLE: string = process.env.STOCKS_TABLE!;
 
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+
+
+  console.log(event);
+
+
+
   const id = event.pathParameters?.id;
+
+  const productParams = {
+    TableName: PRODUCTS_TABLE,
+    Key: { id },
+  };
+
+  const stockParams = {
+    TableName: STOCKS_TABLE,
+    Key: { product_id: id },
+  };
+
   console.log('id', id);
-  const product = data.find((product) => product.id === id);
   if (!id) {
     return {
       statusCode: 400,
@@ -24,7 +43,13 @@ export const handler: APIGatewayProxyHandler = async (
     };
   }
 
+  const productData = await dynamoDB.get(productParams).promise();
+  const stockData = await dynamoDB.get(stockParams).promise();
 
+  const product = {
+    ...productData.Item,
+    count: stockData.Item ? stockData.Item.count : 0,
+  };
 
   if (!product) {
     return {

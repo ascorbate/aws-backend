@@ -20,6 +20,20 @@ export class AwsBackendStack extends cdk.Stack {
       'stocks'
     );
 
+    const createProductLambda = new lambda.Function(
+      this,
+      'createProductHandler',
+      {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        code: lambda.Code.fromAsset('lambda'),
+        handler: 'createProduct.handler',
+        environment: {
+          PRODUCTS_TABLE: productsTable.tableName,
+          STOCKS_TABLE: stocksTable.tableName,
+        },
+      }
+    );
+
     const fetchAllProductsLambda = new lambda.Function(
       this,
       'FetchAllProductsFunction',
@@ -48,14 +62,12 @@ export class AwsBackendStack extends cdk.Stack {
       }
     );
 
-
     productsTable.grantReadData(fetchAllProductsLambda);
     stocksTable.grantReadData(fetchAllProductsLambda);
     productsTable.grantReadData(fetchProductByIdLambda);
     stocksTable.grantReadData(fetchProductByIdLambda);
-
-
-
+    productsTable.grantWriteData(createProductLambda);
+    stocksTable.grantWriteData(createProductLambda);
     const productCatalogApi = new apigateway.RestApi(
       this,
       'ProductCatalogApi',
@@ -81,13 +93,10 @@ export class AwsBackendStack extends cdk.Stack {
       'GET',
       new apigateway.LambdaIntegration(fetchProductByIdLambda)
     );
-
-    new cdk.CfnOutput(this, 'ProductsApiEndpoint', {
-      value: productCatalogApi.url,
-      description: 'The URL of the Products API',
-    });
-
-
+    productsResource.addMethod(
+      'POST',
+      new apigateway.LambdaIntegration(fetchAllProductsLambda)
+    );
 
   }
 }

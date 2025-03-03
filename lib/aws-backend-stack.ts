@@ -95,7 +95,7 @@ export class AwsBackendStack extends cdk.Stack {
     );
     productsResource.addMethod(
       'POST',
-      new apigateway.LambdaIntegration(fetchAllProductsLambda)
+      new apigateway.LambdaIntegration(createProductLambda)
     );
 
   }
